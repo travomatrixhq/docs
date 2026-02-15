@@ -1,0 +1,39 @@
+---
+title: 'Onboarding Workflow'
+description: 'Complete your agency KYC and setup'
+icon: 'address-card'
+---
+
+Before you can book flights, your agency must complete the onboarding and KYC process.
+
+## Checking Status
+
+You can check your current onboarding progress at any time.
+
+```json
+GET /api/onboarding/status
+```
+
+### Response Example
+
+The response will highlight any missing requirements:
+
+```json
+{
+  "success": true,
+  "data": {
+    "profile": { "name": "Global Travels" },
+    "missing": ["GST_CERTIFICATE", "PAN_CARD"]
+  }
+}
+```
+
+## Completing Requirements
+
+1. **Submit Documents**: Upload the required business documents (GST, PAN, etc.) via the dashboard or specific document endpoints.
+2. **Verification**: Our team will review your submission within 24-48 hours.
+3. **Activation**: Once verified, your wallet will be enabled for top-ups and bookings.
+
+<Info>
+  You can still search for flights while onboarding is in progress, but booking will be disabled until KYC is complete.
+</Info>

@@ -1,0 +1,68 @@
+---
+title: 'Flight Booking Workflow'
+description: 'From search to confirmed PNR'
+icon: 'plane-departure'
+---
+
+Booking a flight with Nimbus is a streamlined three-step process.
+
+## 1. Search for Flights
+
+Use the search endpoint to find available flights based on origin, destination, and dates.
+
+```json
+POST /api/flights/search
+{
+  "origin": "DEL",
+  "destination": "BOM",
+  "departure_date": "2026-03-15T00:00:00Z",
+  "adults": 1,
+  "travel_class": "ECONOMY"
+}
+```
+
+## 2. Review and Select
+
+The search results will return a list of flights with unique IDs. Select the flight that meets your requirements.
+
+<Tip>
+  Always verify the `total_price` and `segments` before proceeding to booking, as flight availability changes rapidly.
+</Tip>
+
+## 3. Create Booking
+
+Submit the passenger details and the flight information to finalize the booking.
+
+```json
+POST /api/flights/booking/create
+{
+  "flight_id": "fl_123",
+  "passengers": [
+    {
+      "title": "mr",
+      "first_name": "John",
+      "last_name": "Doe",
+      "pax_type": "ADULT"
+    }
+  ],
+  "contact": {
+    "email": "john@example.com",
+    "phone": "+919876543210"
+  }
+}
+```
+
+## 4. Confirmation
+
+Upon success, you will receive a `pnr` and a `status` of `CONFIRMED`.
+
+```json
+{
+  "success": true,
+  "data": {
+    "booking_id": "bk_987",
+    "pnr": "ABCDEF",
+    "status": "CONFIRMED"
+  }
+}
+```
