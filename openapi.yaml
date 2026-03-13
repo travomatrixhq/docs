@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: RouteCore B2B Flight API
+  title: Travomatrix B2B Flight API
   version: 1.0.0
   description: |
     Comprehensive B2B API for flight search, validation, and booking.

@@ -1,16 +1,16 @@
 ---
 title: Quickstart
-description: "Get started with RouteCore B2B in 5 minutes"
+description: "Get started with Travomatrix B2B in 5 minutes"
 ---
 
-Follow these steps to perform your first B2B booking on RouteCore.
+Follow these steps to perform your first B2B booking on Travomatrix.
 
 ### 1. Create an Agent
 
 First, create a travel agency entity.
 
 ```bash
-curl -X POST https://api.routecore.io/api/v1/agency/agents \
+curl -X POST https://www.travomatrix.com/api/v1/agency/agents \
 -H "Content-Type: application/json" \
 -d '{
   "name": "Global Travels",
@@ -25,7 +25,7 @@ curl -X POST https://api.routecore.io/api/v1/agency/agents \
 Search for flights in B2B mode to see your commissions.
 
 ```bash
-curl -X POST https://api.routecore.io/api/v1/search \
+curl -X POST https://www.travomatrix.com/api/v1/search \
 -H "Content-Type: application/json" \
 -d '{
   "origin": "DEL",
@@ -40,7 +40,7 @@ curl -X POST https://api.routecore.io/api/v1/search \
 Use the `fare_token` from the search results to create a booking. Ensure the agent has enough balance.
 
 ```bash
-curl -X POST https://api.routecore.io/api/v1/bookings \
+curl -X POST https://www.travomatrix.com/api/v1/bookings \
 -H "Content-Type: application/json" \
 -d '{
   "fare_token": "TOKEN_FROM_SEARCH",

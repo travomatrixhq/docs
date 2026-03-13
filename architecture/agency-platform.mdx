@@ -3,10 +3,10 @@ title: Agency Platform
 description: "Core multi-tenant architecture"
 ---
 
-The Agency Platform provides the multi-tenant layer of RouteCore, isolating agencies and their users while providing centralized financial control.
+The Agency Platform provides the multi-tenant layer of Travomatrix, isolating agencies and their users while providing centralized financial control.
 
 ## Multi-tenant Design
-Every resource in RouteCore (Bookings, Wallets, Users) is scoped to an `AgentID`. This ensures that one agency cannot view or modify the data of another.
+Every resource in Travomatrix (Bookings, Wallets, Users) is scoped to an `AgentID`. This ensures that one agency cannot view or modify the data of another.
 
 ## RBAC System
 The Role-Based Access Control (RBAC) system is implemented at the API layer. Roles like `SUPER_ADMIN` can perform system-wide reloads and credit adjustments, while `AGENT` roles are restricted to flight operations.
