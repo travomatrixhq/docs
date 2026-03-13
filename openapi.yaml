@@ -1,496 +1,208 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
-  title: Nimbus API
-  description: |
-    The Nimbus API provides a comprehensive set of endpoints for travel agencies to manage authentication, 
-    KYC onboarding, wallet transactions, flight searches, and bookings.
-    
-    This documentation is designed to be used with Mintlify and follows a "seasonal architecture" 
-    approach by organizing resources into logical domains.
+  title: RouteCore B2B Flight API
   version: 1.0.0
-  contact:
-    name: Nimbus Support
-    email: support@travomatrix.com
-
+  description: |
+    Comprehensive B2B API for flight search, validation, and booking.
 servers:
-  - url: http://localhost:8080
-    description: Development Server
-  - url: https://api.nimbus.travomatrix.com
-    description: Production Server
-
-tags:
-  - name: Auth
-    description: Authentication and identity management
-  - name: Onboarding
-    description: Agency KYC and onboarding workflow
-  - name: Flights
-    description: Flight search and booking operations
-  - name: Wallet
-    description: Balance management and transactions
-  - name: Markup
-    description: Agency markup settings
-  - name: Admin
-    description: Internal administrative operations
-
+  - url: https://api.travomatrix.com/api/v1
+    description: Production Environment
+  - url: http://uat.travomatrix.com/api/v1
+    description: UAT Environment
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    cookieAuth:
+    ApiKeyAuth:
       type: apiKey
-      in: cookie
-      name: access_token
-
+      in: header
+      name: X-API-Key
   schemas:
-    # --- AUTH SCHEMAS ---
-    SendOTPRequest:
-      type: object
-      required: [identifier, type]
-      properties:
-        identifier:
-          type: string
-          description: Email or phone number
-          example: "user@example.com"
-        type:
-          type: string
-          enum: [EMAIL, PHONE]
-          example: "EMAIL"
-        device_id:
-          type: string
-          example: "web-client-id"
-        trace_id:
-          type: string
-          example: "abc-123"
-    
-    SendOTPResponse:
+    PricingBreakdown:
       type: object
       properties:
-        success:
-          type: boolean
-        error:
-          type: boolean
-        message:
-          type: string
-        data:
-          type: object
-          properties:
-            cooldown_seconds:
-              type: integer
-              example: 60
-            trace_id:
-              type: string
-              example: "trace-xyz"
+        base_fare:
+          type: integer
+          description: Base fare in paise.
+        taxes:
+          type: integer
+          description: Total taxes and fees in paise.
+        commission:
+          type: integer
+          description: Agent commission earned in paise.
+        ota_markup:
+          type: integer
+          description: Platform markup in paise.
+        net_fare:
+          type: integer
+          description: Final amount to be debited from agent wallet (Base + Taxes + Markup - Commission).
+        final_price:
+          type: integer
+          description: Total price to display to the end customer.
 
-    VerifyOTPRequest:
+    SearchRequest:
       type: object
-      required: [identifier, code]
-      properties:
-        identifier:
-          type: string
-          example: "user@example.com"
-        code:
-          type: string
-          example: "123456"
-        device_id:
-          type: string
-        trace_id:
-          type: string
-
-    # --- FLIGHT SCHEMAS ---
-    FlightSearchRequest:
-      type: object
-      required: [origin, destination, departure_date, adults, travel_class]
+      required:
+        - origin
+        - dest
+        - dod
       properties:
         origin:
           type: string
-          description: IATA code of origin airport
           example: "DEL"
-        destination:
+        dest:
           type: string
-          description: IATA code of destination airport
-          example: "BOM"
-        departure_date:
+          example: "DXB"
+        dod:
           type: string
-          format: date-time
-          example: "2026-03-15T00:00:00Z"
-        return_date:
+          description: Departure date in YYYYMMDD format.
+          example: "20260501"
+        doa:
           type: string
-          format: date-time
-          example: "2026-03-20T00:00:00Z"
-        adults:
+          description: Return date in YYYYMMDD format.
+        pax_adult:
           type: integer
-          minimum: 1
-          example: 1
-        children:
+          default: 1
+        pax_child:
           type: integer
-          example: 0
-        infants:
+          default: 0
+        pax_infant:
           type: integer
-          example: 0
-        travel_class:
+          default: 0
+        cabin:
           type: string
           enum: [ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST]
-          example: "ECONOMY"
-        display_currency:
+        mode:
           type: string
-          example: "INR"
+          enum: [consumer, b2b]
+          default: b2b
+          description: Set to 'b2b' to enable commission calculation.
 
-    FlightSearchResponse:
+    BookingRequest:
       type: object
+      required:
+        - fare_token
+        - passengers
+        - contact_info
+        - agent_id
       properties:
-        success:
-          type: boolean
-        data:
-          type: object
-          properties:
-            search_id:
-              type: string
-            flights:
-              type: array
-              items:
-                $ref: '#/components/schemas/Flight'
-
-    Flight:
-      type: object
-      properties:
-        id:
+        fare_token:
           type: string
-        total_price:
-          type: number
-        currency:
+          description: Token obtained from Fare Validation.
+        agent_id:
           type: string
-        outbound:
-          $ref: '#/components/schemas/FlightGroup'
-
-    FlightGroup:
-      type: object
-      properties:
-        segments:
-          type: array
-          items:
-            $ref: '#/components/schemas/FlightSegment'
-
-    FlightSegment:
-      type: object
-      properties:
-        carrier_name:
-          type: string
-        flight_number:
-          type: string
-        origin:
-          type: string
-        destination:
-          type: string
-        departure_at:
-          type: string
-          format: date-time
-
-    # --- COMMON SCHEMAS ---
-    GenericResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
-          type: string
-        error:
-          type: boolean
-
-    # --- BOOKING SCHEMAS ---
-    CreateBookingRequest:
-      type: object
-      required: [flight_id, flight_details, total_price, currency, passengers, contact]
-      properties:
-        flight_id:
-          type: string
-          example: "fl_123"
-        flight_details:
-          $ref: '#/components/schemas/Flight'
-        total_price:
-          type: number
-          example: 15000.50
-        currency:
-          type: string
-          example: "INR"
+          description: Unique ID of the agency.
         passengers:
           type: array
           items:
             $ref: '#/components/schemas/Passenger'
-        contact:
+        contact_info:
           type: object
-          required: [email, phone]
           properties:
-            email: {type: string, example: "traveller@example.com"}
-            phone: {type: string, example: "+919876543210"}
+            email:
+              type: string
+            phone:
+              type: string
 
     Passenger:
       type: object
-      required: [title, first_name, last_name, pax_type]
       properties:
-        title: {type: string, enum: [mr, mrs, ms, miss, mast], example: "mr"}
-        first_name: {type: string, example: "John"}
-        last_name: {type: string, example: "Doe"}
-        gender: {type: string, enum: [m, f], example: "m"}
-        pax_type: {type: string, enum: [ADULT, CHILD, INFANT], example: "ADULT"}
-        born_on: {type: string, format: date, example: "1990-01-01"}
-
-    BookingResponse:
-      type: object
-      properties:
-        success: {type: boolean}
-        data:
-          type: object
-          properties:
-            booking_id: {type: string}
-            pnr: {type: string, example: "ABCDEF"}
-            status: {type: string, enum: [CONFIRMED, PENDING, FAILED]}
-            total_price: {type: number}
-            currency: {type: string}
-            created_at: {type: string, format: date-time}
+        first_name:
+          type: string
+        last_name:
+          type: string
+        title:
+          type: string
+          enum: [MR, MRS, MS, MSTR, MISS]
+        gender:
+          type: string
+          enum: [M, F]
+        dob:
+          type: string
+          format: date
+          description: YYYY-MM-DD
 
 paths:
-  # --- AUTH ---
-  /api/auth/send-otp:
+  /search:
     post:
-      tags: [Auth]
-      summary: Send OTP
-      description: Initiates the OTP flow for login or registration.
+      summary: B2B Flight Search
+      tags: [Operations]
+      security:
+        - ApiKeyAuth: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SendOTPRequest'
+              $ref: '#/components/schemas/SearchRequest'
       responses:
         '200':
-          description: OTP sent successfully or failure message
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendOTPResponse'
-        '400':
-          description: Invalid request body
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-
-  /api/auth/verify-otp:
-    post:
-      tags: [Auth]
-      summary: Verify OTP
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VerifyOTPRequest'
-      responses:
-        '200':
-          description: Verification result
+          description: List of flight offers with B2B pricing.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
                   data:
                     type: object
                     properties:
-                      verification_token:
+                      search_id:
                         type: string
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            offer_id:
+                              type: string
+                            airline:
+                              type: string
+                            pricing_breakdown:
+                              $ref: '#/components/schemas/PricingBreakdown'
 
-  /api/auth/login:
+  /fare/validate:
     post:
-      tags: [Auth]
-      summary: Login with password
+      summary: Fare Validation & Price Lock
+      tags: [Operations]
+      security:
+        - ApiKeyAuth: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               type: object
-              required: [email, password]
               properties:
-                email:
-                  type: string
-                password:
+                fare_token:
                   type: string
       responses:
         '200':
-          description: Login successful
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-                example: access_token=...; HttpOnly; Path=/
+          description: Validated fare with 15-minute lock.
 
-  # --- FLIGHTS ---
-  /api/flights/search:
+  /bookings:
     post:
-      tags: [Flights]
-      summary: Search Flights
+      summary: Create B2B Booking
+      description: This operation will atomically debit the net_fare from the agent's wallet.
+      tags: [Operations]
       security:
-        - bearerAuth: []
-        - cookieAuth: []
+        - ApiKeyAuth: []
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FlightSearchRequest'
+              $ref: '#/components/schemas/BookingRequest'
       responses:
-        '200':
-          description: Flight search results
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FlightSearchResponse'
-        '401':
-          description: Unauthorized
+        '201':
+          description: Booking created successfully.
+        '402':
+          description: Insufficient funds in agent wallet.
 
-  /api/flights/sectors:
-    get:
-      tags: [Flights]
-      summary: Search Sectors (Airports)
+  /bookings/{id}/cancel:
+    post:
+      summary: Cancel & Auto-Refund
+      tags: [Post-Booking]
       parameters:
-        - name: q
-          in: query
+        - name: id
+          in: path
           required: true
           schema:
             type: string
-          example: "DEL"
       responses:
         '200':
-          description: List of matching sectors
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        code: {type: string}
-                        city: {type: string}
-                        name: {type: string}
-
-  /api/flights/booking/create:
-    post:
-      tags: [Flights]
-      summary: Create Flight Booking
-      description: |
-        Creates a new flight booking. This endpoint requires the full flight details 
-        previously retrieved from the search results to ensure price consistency.
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateBookingRequest'
-      responses:
-        '200':
-          description: Booking created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookingResponse'
-        '400':
-          description: Invalid request or insufficient funds
-        '401':
-          description: Unauthorized
-
-  # --- ONBOARDING ---
-  /api/onboarding/status:
-    get:
-      tags: [Onboarding]
-      summary: Get onboarding status
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Current onboarding profile and missing steps
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  data:
-                    type: object
-                    properties:
-                      profile: {type: object}
-                      missing: {type: array, items: {type: string}}
-
-  # --- WALLET ---
-  /api/wallet/balance:
-    get:
-      tags: [Wallet]
-      summary: Get wallet balance
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Current balance details
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  data:
-                    type: object
-                    properties:
-                      balance: {type: number}
-                      currency: {type: string}
-
-  # --- ADMIN ---
-  /api/admin/audit-logs:
-    get:
-      tags: [Admin]
-      summary: Get Audit Logs
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          schema: {type: integer, default: 1}
-        - name: page_size
-          in: query
-          schema: {type: integer, default: 50}
-      responses:
-        '200':
-          description: List of audit logs
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success: {type: boolean}
-                  data:
-                    type: object
-                    properties:
-                      logs: {type: array, items: {type: object}}
-
-  /health:
-    get:
-      summary: Health Check
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "OK"
+          description: Cancellation processed and refund credited to wallet.

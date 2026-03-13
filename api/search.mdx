@@ -1,0 +1,11 @@
+---
+title: "Search"
+openapi: "POST /search"
+---
+
+Search for flights with real-time B2B pricing, including automated markup and commission calculations.
+
+### B2B Mode
+To enable B2B pricing, ensure the `mode` field is set to `b2b`. This will trigger the `PricingEngine` to calculate:
+- **Commission**: Your agency's earnings.
+- **Net Fare**: The actual amount that will be deducted from your wallet.

@@ -1,0 +1,50 @@
+---
+title: Quickstart
+description: "Get started with RouteCore B2B in 5 minutes"
+---
+
+Follow these steps to perform your first B2B booking on RouteCore.
+
+### 1. Create an Agent
+
+First, create a travel agency entity.
+
+```bash
+curl -X POST https://api.routecore.io/api/v1/agency/agents \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "Global Travels",
+  "company_name": "Global Travels Pvt Ltd",
+  "email": "admin@globaltravels.com",
+  "credit_limit": 5000000
+}'
+```
+
+### 2. Search for Flights
+
+Search for flights in B2B mode to see your commissions.
+
+```bash
+curl -X POST https://api.routecore.io/api/v1/search \
+-H "Content-Type: application/json" \
+-d '{
+  "origin": "DEL",
+  "dest": "BOM",
+  "dod": "20260521",
+  "mode": "b2b"
+}'
+```
+
+### 3. Create a Booking
+
+Use the `fare_token` from the search results to create a booking. Ensure the agent has enough balance.
+
+```bash
+curl -X POST https://api.routecore.io/api/v1/bookings \
+-H "Content-Type: application/json" \
+-d '{
+  "fare_token": "TOKEN_FROM_SEARCH",
+  "agent_id": "AGENT_ID",
+  "passengers": [...]
+}'
+```

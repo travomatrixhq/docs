@@ -1,0 +1,12 @@
+---
+title: "Cancellation & Refund"
+openapi: "POST /bookings/{id}/cancel"
+---
+
+Cancel an existing booking and initiate the refund process.
+
+### B2B Refund Logic
+When a B2B booking is cancelled:
+1. The **Refund Engine** calculates the refundable amount (`Paid - Airline Penalties - OTA Fees`).
+2. The calculated amount is automatically credited back to the agency's wallet.
+3. A ledger entry of type `REFUND` is created for audit purposes.

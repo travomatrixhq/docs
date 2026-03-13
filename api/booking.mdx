@@ -1,0 +1,11 @@
+---
+title: "Create B2B Booking"
+openapi: "POST /bookings"
+---
+
+Create a flight booking for a previously validated fare. 
+
+### Wallet Integration
+For B2B bookings, the system performs an atomic balance check. If the agency's `Balance + Credit Limit` is less than the `Net Fare`, the booking will fail with an `INSUFFICIENT_FUNDS` error.
+
+Upon success, the `Net Fare` is immediately debited from the agent's wallet.

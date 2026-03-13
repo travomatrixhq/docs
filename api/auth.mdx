@@ -1,0 +1,41 @@
+---
+title: Authentication & RBAC
+description: "Managing users and roles in the B2B platform"
+---
+
+RouteCore uses API keys for server-side authentication and a Role-Based Access Control (RBAC) system for agency users.
+
+## Roles
+
+- `SUPER_ADMIN`: Full system access.
+- `AGENCY_ADMIN`: Manage a specific agency's users and finances.
+- `AGENT`: Standard search and booking capabilities.
+- `FINANCE`: Manage wallets and view transaction history.
+
+## User Login
+
+`POST /api/v1/agency/login`
+
+Authenticate a user and retrieve their profile and agent context.
+
+**Request Body**
+<ParamField body="email" type="string" required />
+<ParamField body="password" type="string" required />
+
+**Response**
+<ResponseField name="id" type="string" />
+<ResponseField name="email" type="string" />
+<ResponseField name="role" type="string" />
+<ResponseField name="agent_id" type="string" />
+
+## Create User
+
+`POST /api/v1/agency/users`
+
+Create a new user within an agency.
+
+**Request Body**
+<ParamField body="email" type="string" required />
+<ParamField body="password" type="string" required />
+<ParamField body="role" type="string" required />
+<ParamField body="agent_id" type="string" required />

@@ -1,0 +1,23 @@
+---
+title: Pricing Engine
+description: "How markups and commissions are calculated"
+---
+
+The Pricing Engine is responsible for transforming raw provider fares into finalized customer-facing and agent-facing prices.
+
+## Rule Types
+
+- **MARKUP**: Increases the base fare. Can be a flat value or a percentage. Applied to both B2B and Consumer modes.
+- **COMMISSION**: Calculates the agent's earnings. Usually a percentage of the base fare. Only applied in B2B mode.
+
+## Calculation Logic
+
+The engine follows a strict sequence:
+1.  **Identify Rules**: Matches the request (Airline, Provider, Mode) against the active pricing rules.
+2.  **Calculate Markup**: `Markup = Base * Percent + Flat`.
+3.  **Calculate Commission**: `Commission = Base * Percent`.
+4.  **Final Price**: `Base + Taxes + Markup`.
+5.  **Net Fare (B2B only)**: `Final Price - Commission`.
+
+## Dynamic Updates
+Pricing rules are stored in `data/pricing_rules.csv` and can be reloaded at runtime via the Admin API without restarting the server.

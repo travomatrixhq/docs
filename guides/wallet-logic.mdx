@@ -1,0 +1,28 @@
+---
+title: Wallet & Credit Logic
+description: "How financial settlements work in RouteCore"
+---
+
+RouteCore uses a "Prepaid + Credit Limit" model to manage agency balances.
+
+## Balance Calculation
+
+An agent's available purchasing power is calculated as:
+`Available Funds = Wallet Balance + Credit Limit`
+
+- **Wallet Balance**: The actual cash deposited by the agent.
+- **Credit Limit**: A buffer allowed by the platform administrator.
+
+## Transaction Types
+
+### DEBIT
+Occurs when a booking is created. The `net_fare` is deducted from the balance. If the balance goes negative, it uses the credit limit.
+
+### CREDIT
+Manual top-up by the administrator when an agent pays.
+
+### REFUND
+Automatically triggered on successful cancellation. The amount credited is the original `net_fare` minus penalties.
+
+## Atomicity and Safety
+All wallet operations are atomic and wrapped in database transactions. This prevents "double-spending" or balance drift during high-concurrency booking attempts.
