@@ -1,0 +1,30 @@
+<svg viewBox="0 0 500 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&amp;display=swap');
+      .orange { fill: #FF7A00; }
+      .blue { fill: #00AEEF; }
+      .text-large { font-family: 'Montserrat', sans-serif; font-size: 58px; font-weight: 800; letter-spacing: -1.5px; }
+      .text-small { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; fill: #111111; letter-spacing: 0.5px; }
+    </style>
+    <clipPath id="suitcase">
+      <rect x="20" y="30" width="80" height="65" rx="12" />
+    </clipPath>
+  </defs>
+
+  <path d="M 42 30 V 20 Q 42 12 50 12 H 70 Q 78 12 78 20 V 30" fill="none" stroke="#FF7A00" stroke-width="8" stroke-linecap="round" />
+
+  <g clip-path="url(#suitcase)">
+    <rect x="20" y="30" width="80" height="65" class="orange" />
+    <polygon points="10,110 115,20 115,110" class="blue" />
+    <line x1="10" y1="105" x2="80" y2="40" stroke="#FFFFFF" stroke-width="8" />
+    <g transform="translate(68, 52) rotate(45) scale(1.6)">
+      <path d="M0,-12 L2,-8 L2,-1 L12,3 L12,6 L2,2 L2,9 L6,12 L6,14 L0,12 L-6,14 L-6,12 L-2,9 L-2,2 L-12,6 L-12,3 L-2,-1 L-2,-8 Z" fill="#FFFFFF" />
+    </g>
+  </g>
+
+  <text x="120" y="78" class="text-large">
+    <tspan class="orange">Travo</tspan><tspan class="blue">Matrix</tspan>
+  </text>
+  <text x="125" y="105" class="text-small">Trusted by millions</text>
+</svg>

@@ -1,7 +1,7 @@
 {
   "name": "Travomatrix B2B",
   "logo": {
-    "light": "/logo-light.svg",
+    "light": "/logo.svg",
     "dark": "/logo-dark.svg"
   },
   "favicon": "/favicon.png",
