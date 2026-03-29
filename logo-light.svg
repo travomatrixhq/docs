@@ -17,7 +17,7 @@
 
   <!-- Suitcase Body & Plane -->
   <g clip-path="url(#suitcase)">
-    <rect x="20" y="30" width="80" height="65" class="orange" />
+    <rect x="20" y="30" width="80" height="65" fill="#FF7A00" />
     <polygon points="10,110 115,20 115,110" class="blue" />
     <line x1="10" y1="110" x2="103" y2="30" stroke="#FFFFFF" stroke-width="2" />
     <g transform="translate(72,57) rotate(47) scale(1.5)">
@@ -27,7 +27,7 @@
 
   <!-- Text perfectly aligned -->
   <text x="120" y="78" class="text-large">
-    <tspan class="orange">Travo</tspan><tspan class="blue">Matrix</tspan>
+    <tspan fill="#FF7A00">Travo</tspan><tspan fill="#00AEEF">Matrix</tspan>
   </text>
   <!-- Centered beneath TravoMatrix -->
   <text x="285" y="106" class="text-small" text-anchor="middle">Trusted by millions</text>
