@@ -6,8 +6,8 @@
   },
   "favicon": "/favicon.png",
   "colors": {
-    "primary": "#00AEEF",
-    "light": "#33BEF2",
+    "primary": "#FF7A00",
+    "light": "#00AEEF",
     "dark": "#008CBE"
   },
   "topbarLinks": [
@@ -128,7 +128,7 @@
     {
       "group": "Rail API",
       "pages": [
-        "guides/introduction"
+        "guides/rail-api-coming-soon"
       ],
       "icon": "train"
     },
@@ -236,7 +236,7 @@
     {
       "group": "Hotel Certification",
       "pages": [
-        "certification/overview"
+        "certification/hotels-coming-soon"
       ],
       "icon": "hotel"
     }
