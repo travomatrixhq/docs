@@ -5,7 +5,15 @@
     "dark": "/logo-dark.svg"
   },
   "favicon": "/favicon.png",
-  "colors": {},
+  "colors": {
+    "primary": "#FF7A00",
+    "light": "#FF7A00",
+    "dark": "#006F99",
+    "anchors": {
+      "from": "#FF7A00",
+      "to": "#00AEEF"
+    }
+  },
   "topbarLinks": [
     {
       "name": "Support",
