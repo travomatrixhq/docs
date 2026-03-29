@@ -1,7 +1,7 @@
 {
   "name": "Travomatrix API",
   "logo": {
-    "light": "/logo.svg",
+    "light": "/logo-light.svg",
     "dark": "/logo-dark.svg"
   },
   "favicon": "/favicon.svg",
