@@ -121,7 +121,7 @@
     {
       "group": "Hotels API",
       "pages": [
-        "guides/introduction"
+        "guides/hotel-api-coming-soon"
       ],
       "icon": "hotel"
     },
@@ -242,3 +242,4 @@
     }
   ]
 }
+
