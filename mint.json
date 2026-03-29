@@ -1,5 +1,6 @@
 {
   "name": "Travomatrix API",
+  "baseUrl": "http://localhost:3000",
   "logo": {
     "light": "/logo-light.svg",
     "dark": "/logo-dark.svg"
@@ -27,18 +28,21 @@
   "tabs": [
     {
       "name": "Guides",
-      "url": "guides"
+      "url": "/guides"
     },
     {
       "name": "API Reference",
-      "url": "api"
+      "url": "/api"
     },
     {
       "name": "Certification",
-      "url": "certification"
+      "url": "/certification"
     }
   ],
   "openapi": "openapi.yaml",
+  "api": {
+    "baseUrl": "http://localhost:8080/api/v1"
+  },
   "navigation": [
     {
       "group": "Welcome",
@@ -210,7 +214,8 @@
             "certification/flights/scenario-7/3-book",
             "certification/flights/scenario-7/4-ticket",
             "certification/flights/scenario-7/5-partial-quote",
-            "certification/flights/scenario-7/6-partial-confirm"
+            "certification/flights/scenario-7/6-partial-confirm",
+            "certification/flights/scenario-7/7-wallet-check"
           ]
         },
         {

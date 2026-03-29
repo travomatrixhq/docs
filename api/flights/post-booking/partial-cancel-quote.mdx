@@ -4,3 +4,15 @@ openapi: "POST /flight/booking/partial-cancel/quote"
 ---
 
 Calculate the refundable amount for cancelling specific passengers or flight segments while keeping the rest of the booking intact.
+
+### Supported Cancellation Scopes
+The Travomatrix B2B backend abstracts the complexity of all GDS, NDC, and LCC providers into two primary partial cancellation scopes:
+1. **Partial Pax**: Cancel specific passengers (across all segments). Provide `passengers_to_cancel` and leave `segments_to_cancel: []`.
+2. **Partial Segment**: Cancel specific flight segments (for all passengers). Provide `segments_to_cancel` and leave `passengers_to_cancel: []`.
+
+*Note: Mixed cancellations (cancelling specific segments for specific passengers only) are currently restricted to prevent PNR desynchronization.*
+
+### Key Business Rules
+Our unified rules engine enforces the following constraints across all providers:
+* **Infant Dependency**: An infant (`INF`) cannot be cancelled alone, nor can all adults be cancelled if an infant remains on the booking.
+* **Segment Sequence**: Segments must be cancelled in reverse chronological order. You cannot cancel the outbound leg (e.g., Segment 0) while keeping the return leg (e.g., Segment 1). Doing so results in a `segment_sequence_invalid` error.

@@ -1,5 +1,5 @@
 ---
-title: "Step 1: Partial Cancel Quote"
+title: "Step 5: Partial Cancel Quote"
 openapi: "POST /flight/booking/partial-cancel/quote"
 ---
 
@@ -7,11 +7,13 @@ Provide a `booking_id` that has multiple passengers. Add the target passenger's 
 
 ### Request Setup
 <ParamField body="booking_id" type="string" required>Paste the `booking_id`.</ParamField>
-<ParamField body="passengers_to_cancel" type="array" required>Array of passenger IDs (e.g., ["ADT2"]).</ParamField>
+<ParamField body="passengers_to_cancel" type="array" required>Array of passenger IDs (e.g., `["ADT2"]`). Leave empty `[]` if cancelling segments.</ParamField>
+<ParamField body="segments_to_cancel" type="array" required>Array of segment indices (e.g., `[]` if cancelling passengers, or `[1]` to cancel the return segment).</ParamField>
 
 ### Instructions
-1. Review the requirements and set up the request payload.
-2. Hit the **Send** button.
+1. Choose to cancel either specific passengers OR specific segments. Mixed mode is not permitted to maintain PNR sync across GDS/NDC.
+2. Ensure you adhere to backend business rules (e.g., don't cancel an infant alone, don't break chronological segment sequences).
+3. Hit the **Send** button.
 
 <Warning>
   **Requirement:** Review the response payload carefully.

@@ -21,6 +21,10 @@ servers:
     description: Production Environment
   - url: http://uat.travomatrix.com/api/v1
     description: UAT Environment
+  - url: http://localhost:80/api/v1
+    description: Localhost (Port 80)
+  - url: http://localhost:8080/api/v1
+    description: Localhost (Port 8080)
 
 components:
   securitySchemes:

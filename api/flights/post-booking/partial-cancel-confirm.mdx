@@ -4,3 +4,11 @@ openapi: "POST /flight/booking/partial-cancel/confirm"
 ---
 
 Finalize the partial cancellation of specific passengers or flight segments.
+
+### Provider Integration Details (GDS/NDC/LCC)
+Under the hood, Travomatrix orchestrates the complex logic of PNR modification across all providers.
+* **PNR Splitting (Partial Pax)**: For traditional GDS carriers (Amadeus, Travelport), we issue a `DivideReservation` command to split the cancelled passengers into a new PNR, which is then cancelled. The remaining passengers stay in the original `BOOKED` or `TICKETED` PNR.
+* **Segment Removal (Partial Segment)**: For LCCs and NDCs, we execute a direct segment removal and request the partial refund using the cached `Cancel Quote` rules.
+
+### Prerequisite
+A successful `POST /flight/booking/partial-cancel/quote` must be generated right before confirmation. Travomatrix pulls the target passengers and segments directly from your latest cached quote event to ensure atomic processing.

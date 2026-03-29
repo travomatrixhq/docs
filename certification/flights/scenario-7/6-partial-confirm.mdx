@@ -1,18 +1,21 @@
 ---
-title: "Step 2: Confirm Split"
+title: "Step 6: Confirm Split"
 openapi: "POST /flight/booking/partial-cancel/confirm"
 ---
 
-Confirm the cancellation. The system will handle the PNR Splitting logic with the airline, leaving the remaining passengers in a `TICKETED` state.
+Confirm the cancellation. The B2B system abstracts the provider integration:
+* **GDS Carriers (Amadeus/Travelport)**: The system handles `DivideReservation` logic to split the PNR.
+* **NDC/LCC Carriers**: The system handles direct segment removal.
 
 ### Request Setup
 <ParamField header="Idempotency-Key" type="string" required>Generate a random string.</ParamField>
 <ParamField body="booking_id" type="string" required>Paste the `booking_id`.</ParamField>
-<ParamField body="passengers_to_cancel" type="array" required>Array of passenger IDs (e.g., ["ADT2"]).</ParamField>
+<ParamField body="passengers_to_cancel" type="array" required>Array of passenger IDs (e.g., `["ADT2"]`). Pass what you passed in the quote.</ParamField>
+<ParamField body="segments_to_cancel" type="array" required>Array of segment indices. Pass what you passed in the quote.</ParamField>
 
 ### Instructions
-1. Review the requirements and set up the request payload.
-2. Hit the **Send** button.
+1. Hit **Send** to trigger the background atomic wallet debit and provider cancellation.
+2. The remaining passengers stay in the original `TICKETED` PNR, and you will receive a partial refund.
 
 <Warning>
   **Requirement:** Review the response payload carefully.
