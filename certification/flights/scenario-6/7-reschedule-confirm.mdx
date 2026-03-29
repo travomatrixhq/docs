@@ -1,0 +1,18 @@
+---
+title: "Step 3: Confirm Change"
+openapi: "POST /flight/booking/reschedule/confirm"
+---
+
+Finalize the reschedule. The wallet will be automatically debited for the fare difference and penalty fees.
+
+### Request Setup
+<ParamField header="Idempotency-Key" type="string" required>Generate a random string.</ParamField>
+<ParamField body="booking_id" type="string" required>Paste the `booking_id`.</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Review the response payload carefully.
+</Warning>

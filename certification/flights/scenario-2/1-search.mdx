@@ -1,0 +1,20 @@
+---
+title: "Step 1: Roundtrip Search"
+openapi: "POST /flight/search"
+---
+
+Modify the pre-filled search payload to include a `doa` (Date of Arrival) to trigger a roundtrip search. Hit Send and copy the `search_id` and `signature` from the response.
+
+### Request Setup
+<ParamField body="origin" type="string" default="DEL">3-letter IATA origin code.</ParamField>
+<ParamField body="dest" type="string" default="BOM">3-letter IATA destination code.</ParamField>
+<ParamField body="dod" type="string" default="20270515">Departure Date (YYYYMMDD).</ParamField>
+<ParamField body="pax_adult" type="integer" default="1">Number of adults.</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Copy the `search_id` and `signature` from the response. You will need them.
+</Warning>

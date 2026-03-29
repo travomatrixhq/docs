@@ -1,22 +1,58 @@
 ---
 title: B2B Booking Flow
 description: "Understanding the end-to-end B2B lifecycle"
+icon: "diagram-project"
 ---
 
 The B2B flow in Travomatrix ensures financial integrity by integrating search, validation, and booking with the agent's wallet.
 
-## Step 1: Search with Commission
-When searching in `b2b` mode, the `PricingEngine` identifies the applicable commission rules for the agent. The response includes the `net_fare` (amount to be paid by the agent) and the `final_price` (suggested price for the end customer).
+## End-to-End Sequence
 
-## Step 2: Fare Validation
+The following diagram illustrates the interaction between your system, the Travomatrix API, and the B2B wallet during a standard search-to-book flow.
+
+```mermaid
+sequenceDiagram
+    participant P as Partner App
+    participant T as Travomatrix API
+    participant W as B2B Wallet
+    participant G as GDS/NDC Provider
+
+    P->>T: POST /search
+    T->>G: Search Request
+    G-->>T: Raw Fares
+    T->>T: Apply Rules (Markup + Commission)
+    T-->>P: Offers (Net Fare + Final Price)
+
+    P->>T: POST /fare/validate
+    T->>G: Price/Availability Check
+    G-->>T: Confirmed Price
+    T->>T: Lock Price (15m)
+    T-->>P: fare_token + Confirmation
+
+    P->>T: POST /booking/create (Idempotency-Key)
+    T->>W: Balance Check (Balance + Credit >= NetFare)
+    W-->>T: Approved
+    T->>W: Atomic DEBIT (net_fare)
+    T->>G: Create PNR Request
+    G-->>T: PNR Response
+    T-->>P: booking_id + PNR (status: BOOKED)
+```
+
+## Lifecycle Breakdown
+
+### 1. Search with Commission
+The `PricingEngine` identifies the applicable commission rules for the agent. The response includes the `net_fare` (amount to be paid by the agent) and the `final_price` (suggested price for the end customer).
+
+### 2. Fare Validation
 Validation is mandatory. It verifies the live availability with the GDS and locks the price. No wallet deduction happens at this stage.
 
-## Step 3: Booking & Wallet Deduction
-When `POST /bookings` is called:
+### 3. Booking & Wallet Deduction
+When `POST /booking/create` is called:
 1.  The system calculates the final `net_fare`.
 2.  It checks the agent's wallet: `Balance + Credit Limit >= Net Fare`.
 3.  If sufficient, it creates a `DEBIT` transaction and places the booking.
 4.  The booking moves from `PENDING` to `BOOKED` once confirmed by the provider.
 
-## Step 4: Ticketing
-After booking, the agent can issue tickets. Some providers issue tickets automatically during booking, while others require a separate `POST /bookings/ticket` call.
+### 4. Ticketing
+After booking, the agent can issue tickets. Some providers issue tickets automatically during booking, while others require a separate `POST /booking/ticket` call.
+ing/ticket` call.

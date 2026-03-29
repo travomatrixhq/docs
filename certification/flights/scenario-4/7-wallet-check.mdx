@@ -1,0 +1,17 @@
+---
+title: "Step 3: Verify Refund"
+openapi: "GET /flight/agency/wallet/transactions"
+---
+
+Retrieve your transaction ledger using your `agent_id`. You should see a new ledger entry with `"type": "REFUND"`.
+
+### Request Setup
+<ParamField query="agent_id" type="string" required>Your UAT Agent ID.</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Review the ledger to confirm the transaction.
+</Warning>

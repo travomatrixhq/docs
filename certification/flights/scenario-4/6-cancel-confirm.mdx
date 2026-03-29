@@ -1,0 +1,18 @@
+---
+title: "Step 2: Confirm Cancel"
+openapi: "POST /flight/booking/cancel/confirm"
+---
+
+Confirm the cancellation. This triggers the **Refund Engine**, which automatically credits the refund amount back to your B2B wallet.
+
+### Request Setup
+<ParamField header="Idempotency-Key" type="string" required>Generate a random string.</ParamField>
+<ParamField body="booking_id" type="string" required>Paste the `booking_id`.</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** The booking status is now `CANCELLED`. Your wallet has been credited.
+</Warning>

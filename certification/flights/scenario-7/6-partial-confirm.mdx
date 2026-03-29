@@ -1,0 +1,19 @@
+---
+title: "Step 2: Confirm Split"
+openapi: "POST /flight/booking/partial-cancel/confirm"
+---
+
+Confirm the cancellation. The system will handle the PNR Splitting logic with the airline, leaving the remaining passengers in a `TICKETED` state.
+
+### Request Setup
+<ParamField header="Idempotency-Key" type="string" required>Generate a random string.</ParamField>
+<ParamField body="booking_id" type="string" required>Paste the `booking_id`.</ParamField>
+<ParamField body="passengers_to_cancel" type="array" required>Array of passenger IDs (e.g., ["ADT2"]).</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Review the response payload carefully.
+</Warning>

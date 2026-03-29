@@ -1,0 +1,8 @@
+---
+title: "Validate Fare"
+openapi: "POST /flight/fare/validate"
+---
+
+Fare validation performs a live check with the airline provider (GDS/NDC) and creates a guaranteed price lock for 15 minutes.
+
+Upon successful validation, you will receive a `fare_token`, which is required for creating a booking and exploring ancillaries like seats and meals.

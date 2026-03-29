@@ -1,0 +1,20 @@
+---
+title: "Step 1: Find New Flight"
+openapi: "POST /flight/search"
+---
+
+Perform a search for the new desired travel date. Copy the `offer_id` of the flight you wish to switch to.
+
+### Request Setup
+<ParamField body="origin" type="string" default="DEL">3-letter IATA origin code.</ParamField>
+<ParamField body="dest" type="string" default="BOM">3-letter IATA destination code.</ParamField>
+<ParamField body="dod" type="string" default="20270515">Departure Date (YYYYMMDD).</ParamField>
+<ParamField body="pax_adult" type="integer" default="1">Number of adults.</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Copy the `search_id` and `signature` from the response. You will need them.
+</Warning>

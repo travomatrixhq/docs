@@ -1,0 +1,68 @@
+<svg viewBox="0 0 500 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&amp;display=swap');
+      .orange { fill: #FF7A00; }
+      .blue { fill: #00AEEF; }
+      .text-large { font-family: 'Montserrat', system-ui, sans-serif; font-size: 56px; font-weight: 900; letter-spacing: -1.5px; }
+      .text-small { font-family: 'Montserrat', system-ui, sans-serif; font-size: 14px; font-weight: 700; fill: #FFFFFF; letter-spacing: 2.5px; text-transform: uppercase; }
+    </style>
+    
+    <clipPath id="suitcase">
+      <rect x="20" y="30" width="80" height="65" rx="12" />
+    </clipPath>
+    
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+    
+    <linearGradient id="contrail" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Suitcase Handle -->
+  <path d="M 42 30 V 20 Q 42 12 50 12 H 70 Q 78 12 78 20 V 30" fill="none" stroke="#FF7A00" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Suitcase Body -->
+  <g clip-path="url(#suitcase)">
+    <rect x="20" y="30" width="80" height="65" class="orange" />
+    <polygon points="10,110 115,20 115,110" class="blue" />
+    
+    <!-- Premium Fading Contrail with Shadow -->
+    <line x1="-10" y1="125" x2="65" y2="50" stroke="url(#contrail)" stroke-width="12" stroke-linecap="round" filter="url(#shadow)" />
+    
+    <!-- AAAA Game Design Dreamliner Aeroplane Silhouette -->
+    <g transform="translate(68, 48) rotate(45) scale(0.85)" filter="url(#shadow)">
+      <path d="M 0 -28 
+               C 4 -28, 6 -15, 6 -5 
+               L 26 12 
+               C 29 14, 28 17, 24 16 
+               L 6 8 
+               L 5 22 
+               L 15 30 
+               C 17 32, 16 34, 13 33 
+               L 3 29 
+               L 0 31 
+               L -3 29 
+               L -13 33 
+               C -16 34, -17 32, -15 30 
+               L -5 22 
+               L -6 8 
+               L -24 16 
+               C -28 17, -29 14, -26 12 
+               L -6 -5 
+               C -6 -15, -4 -28, 0 -28 Z" 
+            fill="#FFFFFF" />
+    </g>
+  </g>
+
+  <!-- Text -->
+  <text x="120" y="82" class="text-large">
+    <tspan class="orange">Travo</tspan><tspan class="blue">Matrix</tspan>
+  </text>
+  
+  <!-- Slogan perfectly centered with text-anchor -->
+  <text x="285" y="110" class="text-small" text-anchor="middle">Trusted by millions</text>
+</svg>

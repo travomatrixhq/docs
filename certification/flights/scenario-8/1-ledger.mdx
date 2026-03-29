@@ -1,0 +1,17 @@
+---
+title: "Step 1: Audit Financial Ledger"
+api: "GET /agency/wallet/transactions"
+---
+
+This scenario validates your system's ability to audit the financial aspect of the Travomatrix platform. Since all bookings, reschedules, and cancellations atomically debit or credit your wallet, your local ledger must perfectly reconcile with the official transaction history.
+
+### Request Setup
+<ParamField query="agent_id" type="string" required>Your assigned B2B Agent ID.</ParamField>
+
+### Instructions
+1. Ensure your `agent_id` is provided in the query parameters on the right.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** You must locate entries for the `DEBIT` (from Scenario 1) and the `REFUND` (from Scenario 4). Your local wallet balance calculation must exactly match the `Available Funds` derived from this API.
+</Warning>

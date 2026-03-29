@@ -1,0 +1,23 @@
+---
+title: "Step 1: Search Flights"
+openapi: "POST /flight/search"
+---
+
+Welcome to **Scenario 1: Simple One-Way**.
+
+This certification step requires you to search for a flight for 1 Adult. Because we are using a focused interactive widget here, you won't see the massive API schema on this page—just what you need to test!
+
+### Request Setup
+<ParamField body="origin" type="string" default="DEL">3-letter IATA origin code.</ParamField>
+<ParamField body="dest" type="string" default="BOM">3-letter IATA destination code.</ParamField>
+<ParamField body="dod" type="string" default="20270515">Departure Date (YYYYMMDD).</ParamField>
+<ParamField body="pax_adult" type="integer" default="1">Number of adults.</ParamField>
+
+### Instructions
+1. Look at the right panel. The request is natively embedded and pre-filled with the exact test payload above.
+2. Hit the **Send** button to fire the request to UAT.
+3. Review the `PricingBreakdown` in the response payload on the right.
+
+<Warning>
+  **Requirement:** Copy the `search_id` and the `signature` from the response body. You will need them in the next step.
+</Warning>

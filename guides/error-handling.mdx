@@ -1,0 +1,51 @@
+---
+title: "Error Handling"
+description: "Programmatic error codes and resolution strategies."
+icon: "bug"
+---
+
+Travomatrix uses standard HTTP status codes combined with machine-readable error strings in the response body to help your application react appropriately to different failure scenarios.
+
+## Error Schema
+
+All error responses follow this format:
+
+```json
+{
+  "error": "INSUFFICIENT_FUNDS",
+  "message": "Your agency wallet balance is insufficient for this booking.",
+  "search_id": "optional_context_id"
+}
+```
+
+## Common Error Codes
+
+### 1. Financial Errors
+| Code | HTTP | Meaning | Resolution |
+| ---- | ---- | ------- | ---------- |
+| `INSUFFICIENT_FUNDS` | 402 | Wallet Balance + Credit Limit < Net Fare. | Top up wallet or increase credit limit via Admin API. |
+| `WALLET_LOCKED` | 403 | The agent's wallet is frozen. | Contact Travomatrix Support. |
+
+### 2. Search & Validation Errors
+| Code | HTTP | Meaning | Resolution |
+| ---- | ---- | ------- | ---------- |
+| `FARE_EXPIRED` | 410 | The fare was not booked within the 15-minute lock. | Perform a new Search and Validate flow. |
+| `PRICE_CHANGED` | 200/409 | The provider reported a price update during validation. | Surface the new price to the user and re-validate. |
+| `SOLD_OUT` | 410 | No more seats available in the requested class. | Perform a new search. |
+
+### 3. Booking Errors
+| Code | HTTP | Meaning | Resolution |
+| ---- | ---- | ------- | ---------- |
+| `INVALID_PASSENGER_DATA` | 400 | Missing names, invalid DOB, etc. | Correct the passenger array and retry. |
+| `DOB_MISMATCH` | 400 | A Child/Infant's DOB does not match their age category. | Correct the DOB or change the passenger type. |
+| `DUPLICATE_BOOKING` | 409 | A PNR with these passengers already exists (Provider-level). | Use the existing booking or change passenger details. |
+
+### 4. System Errors
+| Code | HTTP | Meaning | Resolution |
+| ---- | ---- | ------- | ---------- |
+| `PROVIDER_TIMEOUT` | 504 | The airline GDS did not respond in time. | Retry with the same `Idempotency-Key`. |
+| `INTERNAL_ERROR` | 500 | Unexpected system failure. | Log the `X-Request-ID` and contact Support. |
+
+## Handling `X-Request-ID`
+
+Every response (success or error) includes an `X-Request-ID` header. **You must log this ID** in your application logs. If you need to contact Travomatrix support, providing this ID will allow our engineers to trace the exact lifecycle of that request across our microservices.

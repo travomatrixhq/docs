@@ -1,36 +1,82 @@
 openapi: 3.0.3
 info:
-  title: Travomatrix B2B Flight API
+  title: Travomatrix B2B Travel API
   version: 1.0.0
   description: |
-    Comprehensive B2B API for flight search, validation, and booking.
+    Travomatrix is a high-performance multi-vertical travel booking engine designed for B2B enterprises.
+    
+    ### Verticals Supported
+    - **Flights**: Unified interface for global GDS and NDC providers.
+    - **Hotels**: Coming Soon.
+    - **Rail**: Coming Soon.
+    - **Cabs**: Coming Soon.
+
+    ### Key Security & Reliability Headers
+    - **X-API-Key**: Your primary server-to-server API key.
+    - **Idempotency-Key**: Required for financial operations. Prevents duplicate actions on retries.
+    - **X-Request-ID**: Optional but recommended. Used for tracing requests through the Travomatrix infrastructure.
+
 servers:
   - url: https://api.travomatrix.com/api/v1
     description: Production Environment
   - url: http://uat.travomatrix.com/api/v1
     description: UAT Environment
+
 components:
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
+
+  parameters:
+    IdempotencyHeader:
+      name: Idempotency-Key
+      in: header
+      description: A unique string to identify this request. Retrying a request with the same key will return the cached response.
+      required: false
+      schema:
+        type: string
+    RequestIDHeader:
+      name: X-Request-ID
+      in: header
+      description: Unique correlation ID for tracing.
+      required: false
+      schema:
+        type: string
+
   schemas:
+    # --- Shared Models ---
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "INSUFFICIENT_FUNDS"
+        message:
+          type: string
+          example: "Your agency wallet balance is insufficient for this booking."
+        search_id:
+          type: string
+
     PricingBreakdown:
       type: object
       properties:
         base_fare:
           type: integer
-          description: Base fare in paise.
+          description: Base fare in Paise.
         taxes:
           type: integer
-          description: Total taxes and fees in paise.
+          description: Total taxes and fees in Paise.
         commission:
           type: integer
-          description: Agent commission earned in paise.
+          description: Agent commission earned in Paise.
         ota_markup:
           type: integer
-          description: Platform markup in paise.
+          description: Platform markup in Paise.
+        agent_markup:
+          type: integer
+          description: Sub-agent markup in Paise.
         net_fare:
           type: integer
           description: Final amount to be debited from agent wallet (Base + Taxes + Markup - Commission).
@@ -38,129 +84,611 @@ components:
           type: integer
           description: Total price to display to the end customer.
 
+    Segment:
+      type: object
+      properties:
+        carrier:
+          type: string
+          pattern: '^[A-Z0-9]{2}$'
+        flight_no:
+          type: string
+        origin:
+          type: string
+          pattern: '^[A-Z]{3}$'
+        dest:
+          type: string
+          pattern: '^[A-Z]{3}$'
+        dep_time:
+          type: string
+          format: date-time
+        arr_time:
+          type: string
+          format: date-time
+        cabin:
+          type: string
+          enum: [ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST]
+        booking_class:
+          type: string
+        seats_available:
+          type: integer
+
+    UnifiedOffer:
+      type: object
+      properties:
+        offer_id:
+          type: string
+        search_id:
+          type: string
+        signature:
+          type: string
+        airline:
+          type: string
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Segment'
+        best_price_paise:
+          type: integer
+        currency:
+          type: string
+        pricing_breakdown:
+          $ref: '#/components/schemas/PricingBreakdown'
+        expires_at:
+          type: string
+          format: date-time
+
+    # --- Search ---
     SearchRequest:
       type: object
       required:
         - origin
         - dest
         - dod
+      example:
+        origin: "DEL"
+        dest: "BOM"
+        dod: "20270515"
+        pax_adult: 1
       properties:
         origin:
           type: string
           example: "DEL"
+          pattern: '^[A-Z]{3}$'
         dest:
           type: string
           example: "DXB"
+          pattern: '^[A-Z]{3}$'
         dod:
           type: string
+          example: "20270501"
+          pattern: '^\d{8}$'
           description: Departure date in YYYYMMDD format.
-          example: "20260501"
         doa:
           type: string
-          description: Return date in YYYYMMDD format.
+          example: "20270505"
+          pattern: '^\d{8}$'
+          description: Return date in YYYYMMDD format (optional for one-way).
         pax_adult:
           type: integer
+          minimum: 1
+          maximum: 9
           default: 1
         pax_child:
           type: integer
+          minimum: 0
+          maximum: 9
           default: 0
         pax_infant:
           type: integer
+          minimum: 0
+          maximum: 9
           default: 0
         cabin:
           type: string
           enum: [ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST]
-        mode:
+        limit:
+          type: integer
+          default: 100
+        cursor:
           type: string
-          enum: [consumer, b2b]
-          default: b2b
-          description: Set to 'b2b' to enable commission calculation.
+          description: Pagination cursor obtained from the previous search response.
 
-    BookingRequest:
+    # --- Validation ---
+    FareValidateRequest:
+      type: object
+      required:
+        - search_id
+        - signature
+      example:
+        search_id: "SEARCH_123"
+        signature: "SIG_XYZ"
+        pax:
+          adult: 1
+      properties:
+        search_id:
+          type: string
+        signature:
+          type: string
+        pax:
+          type: object
+          properties:
+            adult: { type: integer, minimum: 1 }
+            child: { type: integer, minimum: 0 }
+            infant: { type: integer, minimum: 0 }
+
+    FareValidateResponse:
+      type: object
+      properties:
+        fare_token:
+          type: string
+        status:
+          type: string
+          enum: [VALID, PRICE_CHANGED, SOLD_OUT, FARE_EXPIRED, PROVIDER_ERROR]
+        offer:
+          $ref: '#/components/schemas/UnifiedOffer'
+
+    # --- Booking ---
+    PassengerInfo:
+      type: object
+      required: [first_name, last_name, gender, dob]
+      properties:
+        id: { type: string, example: "ADT1" }
+        type: { type: string, enum: [ADT, CHD, INF] }
+        title: { type: string, enum: [MR, MRS, MS, MSTR, MISS] }
+        first_name: { type: string }
+        last_name: { type: string }
+        gender: { type: string, enum: [M, F] }
+        dob: { type: string, format: date, description: "YYYY-MM-DD" }
+        nationality: { type: string, pattern: '^[A-Z]{2}$' }
+        passport_number: { type: string }
+        passport_expiry: { type: string, format: date }
+
+    CreateBookingRequest:
       type: object
       required:
         - fare_token
         - passengers
         - contact_info
-        - agent_id
+      example:
+        fare_token: "VALID_TOKEN_123"
+        agent_id: "AGENT_456"
+        idempotency_key: "IDEM_REQ_001"
+        passengers:
+          - id: "ADT1"
+            type: "ADT"
+            title: "MR"
+            first_name: "JOHN"
+            last_name: "DOE"
+            gender: "M"
+            dob: "1990-05-15"
+            nationality: "IN"
+        contact_info:
+          email: "john.doe@example.com"
+          phone: "+919876543210"
       properties:
         fare_token:
           type: string
           description: Token obtained from Fare Validation.
         agent_id:
           type: string
-          description: Unique ID of the agency.
+        idempotency_key:
+          type: string
         passengers:
           type: array
           items:
-            $ref: '#/components/schemas/Passenger'
+            $ref: '#/components/schemas/PassengerInfo'
         contact_info:
           type: object
           properties:
-            email:
-              type: string
-            phone:
-              type: string
+            email: { type: string, format: email }
+            phone: { type: string }
 
-    Passenger:
+    # --- Ancillaries ---
+    AncillaryRequest:
+      type: object
+      required: [search_id, signature, fare_token, provider]
+      properties:
+        search_id: { type: string }
+        signature: { type: string }
+        fare_token: { type: string }
+        provider: { type: string }
+
+    Seat:
       type: object
       properties:
-        first_name:
-          type: string
-        last_name:
-          type: string
-        title:
-          type: string
-          enum: [MR, MRS, MS, MSTR, MISS]
-        gender:
-          type: string
-          enum: [M, F]
-        dob:
-          type: string
-          format: date
-          description: YYYY-MM-DD
+        seat: { type: string, example: "1A" }
+        type: { type: string, enum: [WINDOW, MIDDLE, AISLE] }
+        available: { type: boolean }
+        price_paise: { type: integer }
+        ancillary_id: { type: string }
+        ancillary_token: { type: string }
+
+    SeatRow:
+      type: object
+      properties:
+        row: { type: integer, example: 1 }
+        seats:
+          type: array
+          items: { $ref: '#/components/schemas/Seat' }
+
+    SegmentSeatMap:
+      type: object
+      properties:
+        segment_index: { type: integer }
+        origin: { type: string }
+        dest: { type: string }
+        seatmap:
+          type: array
+          items: { $ref: '#/components/schemas/SeatRow' }
+
+    MealOption:
+      type: object
+      properties:
+        ancillary_id: { type: string }
+        ancillary_token: { type: string }
+        code: { type: string }
+        name: { type: string, example: "Vegetarian Hindu Meal" }
+        description: { type: string }
+        price_paise: { type: integer }
+
+    SegmentMeals:
+      type: object
+      properties:
+        segment_index: { type: integer }
+        origin: { type: string }
+        dest: { type: string }
+        meals:
+          type: array
+          items: { $ref: '#/components/schemas/MealOption' }
+
+    BaggageOption:
+      type: object
+      properties:
+        ancillary_id: { type: string }
+        ancillary_token: { type: string }
+        code: { type: string }
+        name: { type: string, example: "Extra 15KG Baggage" }
+        weight_kg: { type: integer }
+        pieces: { type: integer }
+        price_paise: { type: integer }
+
+    SegmentBaggage:
+      type: object
+      properties:
+        segment_index: { type: integer }
+        origin: { type: string }
+        dest: { type: string }
+        baggage:
+          type: array
+          items: { $ref: '#/components/schemas/BaggageOption' }
+
+    InsuranceOption:
+      type: object
+      properties:
+        ancillary_id: { type: string }
+        ancillary_token: { type: string }
+        code: { type: string }
+        name: { type: string }
+        plan_type: { type: string, example: "PLATINUM" }
+        price_paise: { type: integer }
+
+    PassengerAncillaries:
+      type: object
+      properties:
+        pax_id: { type: string, example: "ADT1" }
+        pax_type: { type: string, enum: [ADT, CHD, INF] }
+        ancillary_tokens:
+          type: array
+          items: { type: string }
+
+    SeatMapResponse:
+      type: object
+      properties:
+        search_id: { type: string }
+        signature: { type: string }
+        provider: { type: string }
+        currency: { type: string }
+        segments:
+          type: array
+          items: { $ref: '#/components/schemas/SegmentSeatMap' }
+        passenger_ancillaries:
+          type: array
+          items: { $ref: '#/components/schemas/PassengerAncillaries' }
+
+    MealResponse:
+      type: object
+      properties:
+        search_id: { type: string }
+        signature: { type: string }
+        provider: { type: string }
+        currency: { type: string }
+        segments:
+          type: array
+          items: { $ref: '#/components/schemas/SegmentMeals' }
+        passenger_ancillaries:
+          type: array
+          items: { $ref: '#/components/schemas/PassengerAncillaries' }
+
+    BaggageResponse:
+      type: object
+      properties:
+        search_id: { type: string }
+        signature: { type: string }
+        provider: { type: string }
+        currency: { type: string }
+        segments:
+          type: array
+          items: { $ref: '#/components/schemas/SegmentBaggage' }
+        passenger_ancillaries:
+          type: array
+          items: { $ref: '#/components/schemas/PassengerAncillaries' }
+
+    InsuranceResponse:
+      type: object
+      properties:
+        search_id: { type: string }
+        signature: { type: string }
+        provider: { type: string }
+        currency: { type: string }
+        options:
+          type: array
+          items: { $ref: '#/components/schemas/InsuranceOption' }
+        passenger_ancillaries:
+          type: array
+          items: { $ref: '#/components/schemas/PassengerAncillaries' }
+
+    # --- Post-Booking ---
+    CancelQuoteRequest:
+      type: object
+      required: [booking_id]
+      properties:
+        booking_id: { type: string }
+        reason_code: { type: string }
+        cancellation_type: { type: string, enum: [VOLUNTARY, INVOLUNTARY], default: VOLUNTARY }
+
+    CancelQuoteResponse:
+      type: object
+      properties:
+        booking_id: { type: string }
+        processing_mode: { type: string, enum: [AUTO, MANUAL] }
+        airline_penalty_paise: { type: integer }
+        ota_fee_paise: { type: integer }
+        refund_amount_paise: { type: integer }
+        currency: { type: string }
+        quote_valid_until: { type: string, format: date-time }
+
+    CancelConfirmRequest:
+      type: object
+      required: [booking_id]
+      properties:
+        booking_id: { type: string }
+        reason_code: { type: string }
+        cancellation_type: { type: string, enum: [VOLUNTARY, INVOLUNTARY], default: VOLUNTARY }
+
+    CancelBookingResponse:
+      type: object
+      properties:
+        booking_id: { type: string }
+        status: { type: string, enum: [CANCELLED, REFUNDED, PENDING_WITH_AIRLINE] }
+        refund_amount_paise: { type: integer }
+        airline_penalty_paise: { type: integer }
+        ota_fee_paise: { type: integer }
+        currency: { type: string }
+
+    PartialCancelQuoteRequest:
+      type: object
+      required: [booking_id, passengers_to_cancel, segments_to_cancel]
+      properties:
+        booking_id: { type: string }
+        passengers_to_cancel:
+          type: array
+          items: { type: string }
+        segments_to_cancel:
+          type: array
+          items: { type: integer }
+
+    PartialCancelConfirmRequest:
+      type: object
+      required: [booking_id, passengers_to_cancel, segments_to_cancel]
+      properties:
+        booking_id: { type: string }
+        passengers_to_cancel:
+          type: array
+          items: { type: string }
+        segments_to_cancel:
+          type: array
+          items: { type: integer }
+        reason_code: { type: string }
+
+    RescheduleQuoteRequest:
+      type: object
+      required: [booking_id, new_offer_id]
+      properties:
+        booking_id: { type: string }
+        new_offer_id: { type: string }
+        reason_code: { type: string }
+
+    RescheduleQuoteResponse:
+      type: object
+      properties:
+        booking_id: { type: string }
+        fare_difference_paise: { type: integer }
+        airline_change_fee_paise: { type: integer }
+        ota_fee_paise: { type: integer }
+        total_payable_paise: { type: integer }
+        quote_valid_until: { type: string, format: date-time }
+
+    RescheduleConfirmRequest:
+      type: object
+      required: [booking_id]
+      properties:
+        booking_id: { type: string }
+
+    RescheduleBookingResponse:
+      type: object
+      properties:
+        booking_id: { type: string }
+        status: { type: string, enum: [RESCHEDULED, PENDING_WITH_AIRLINE] }
+        fare_difference_paise: { type: integer }
+        change_penalty_paise: { type: integer }
+        new_total_paise: { type: integer }
+
+    # --- Responses ---
+    BookingResponse:
+      type: object
+      properties:
+        booking_id: { type: string }
+        pnr: { type: string }
+        status: { type: string, enum: [PENDING, BOOKED, TICKETED, FAILED] }
+        total_price_paise: { type: integer }
+        currency: { type: string }
+
+    WalletTransaction:
+      type: object
+      properties:
+        id: { type: string }
+        agent_id: { type: string }
+        booking_id: { type: string }
+        type: { type: string, enum: [CREDIT, DEBIT, REFUND, REVERSAL] }
+        amount_paise: { type: integer }
+        balance_after: { type: integer }
+        created_at: { type: string, format: date-time }
 
 paths:
-  /search:
+  # --- Flight Operations ---
+  /flight/search:
     post:
-      summary: B2B Flight Search
-      tags: [Operations]
+      summary: Search Flights
+      tags: [Flights - Operations]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestIDHeader'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+            example:
+              origin: "DEL"
+              dest: "BOM"
+              dod: "20270515"
+              pax_adult: 1
+              mode: "b2b"
+      responses:
+        '200':
+          description: List of flight offers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  search_id: { type: string }
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UnifiedOffer'
+                  cursor: { type: string }
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /flight/fare/validate:
+    post:
+      summary: Validate Fare & Lock Price
+      tags: [Flights - Operations]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestIDHeader'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FareValidateRequest'
+            example:
+              search_id: "SEARCH_123"
+              signature: "SIG_XYZ"
+              pax:
+                adult: 1
+      responses:
+        '200':
+          description: Price lock created for 15 minutes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FareValidateResponse'
+
+  /flight/booking/create:
+    post:
+      summary: Create PNR
+      description: Create a booking and atomically debit the agent wallet.
+      tags: [Flights - Booking]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyHeader'
+        - $ref: '#/components/parameters/RequestIDHeader'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+            example:
+              fare_token: "VALID_TOKEN_123"
+              agent_id: "AGENT_456"
+              idempotency_key: "IDEM_REQ_001"
+              passengers:
+                - id: "ADT1"
+                  type: "ADT"
+                  title: "MR"
+                  first_name: "JOHN"
+                  last_name: "DOE"
+                  gender: "M"
+                  dob: "1990-05-15"
+                  nationality: "IN"
+              contact_info:
+                email: "john.doe@example.com"
+                phone: "+919876543210"
+      responses:
+        '201':
+          description: Booking created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '402':
+          description: Insufficient Funds.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: Idempotency Conflict.
+
+  /flight/booking/ticket:
+    post:
+      summary: Issue Ticket
+      tags: [Flights - Booking]
       security:
         - ApiKeyAuth: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearchRequest'
+              type: object
+              required: [booking_id]
+              properties:
+                booking_id: { type: string }
       responses:
         '200':
-          description: List of flight offers with B2B pricing.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      search_id:
-                        type: string
-                      results:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            offer_id:
-                              type: string
-                            airline:
-                              type: string
-                            pricing_breakdown:
-                              $ref: '#/components/schemas/PricingBreakdown'
+          description: Tickets issued successfully.
 
-  /fare/validate:
+  /flight/booking/status:
     post:
-      summary: Fare Validation & Price Lock
-      tags: [Operations]
+      summary: Get Booking Details
+      tags: [Flights - Booking]
       security:
         - ApiKeyAuth: []
       requestBody:
@@ -169,40 +697,264 @@ paths:
             schema:
               type: object
               properties:
-                fare_token:
-                  type: string
+                booking_id: { type: string }
+                pnr: { type: string }
       responses:
         '200':
-          description: Validated fare with 15-minute lock.
+          description: Current booking state and PNR details.
 
-  /bookings:
+  # --- Ancillaries ---
+  /flight/fare/seatmap:
     post:
-      summary: Create B2B Booking
-      description: This operation will atomically debit the net_fare from the agent's wallet.
-      tags: [Operations]
+      summary: Get Seat Map
+      tags: [Flights - Ancillaries]
       security:
         - ApiKeyAuth: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookingRequest'
+              $ref: '#/components/schemas/AncillaryRequest'
       responses:
-        '201':
-          description: Booking created successfully.
-        '402':
-          description: Insufficient funds in agent wallet.
+        '200':
+          description: Available seats with pricing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatMapResponse'
 
-  /bookings/{id}/cancel:
+  /flight/fare/meals:
     post:
-      summary: Cancel & Auto-Refund
-      tags: [Post-Booking]
+      summary: Get Meals
+      tags: [Flights - Ancillaries]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AncillaryRequest'
+      responses:
+        '200':
+          description: Available meals with pricing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealResponse'
+
+  /flight/fare/baggage:
+    post:
+      summary: Get Baggage
+      tags: [Flights - Ancillaries]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AncillaryRequest'
+      responses:
+        '200':
+          description: Available extra baggage with pricing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaggageResponse'
+
+  /flight/fare/insurance:
+    post:
+      summary: Get Insurance Options
+      tags: [Flights - Ancillaries]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AncillaryRequest'
+      responses:
+        '200':
+          description: Available insurance options with pricing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsuranceResponse'
+
+  # --- Post-Booking ---
+  /flight/booking/cancel/quote:
+    post:
+      summary: Get Cancellation Quote
+      tags: [Flights - Post-Booking]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelQuoteRequest'
+      responses:
+        '200':
+          description: Cancellation quote details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelQuoteResponse'
+
+  /flight/booking/cancel/confirm:
+    post:
+      summary: Confirm Cancellation
+      tags: [Flights - Post-Booking]
+      security:
+        - ApiKeyAuth: []
       parameters:
-        - name: id
-          in: path
+        - $ref: '#/components/parameters/IdempotencyHeader'
+        - $ref: '#/components/parameters/RequestIDHeader'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelConfirmRequest'
+      responses:
+        '200':
+          description: Booking cancelled and refund credited.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelBookingResponse'
+
+  /flight/booking/partial-cancel/quote:
+    post:
+      summary: Get Partial Cancellation Quote
+      tags: [Flights - Post-Booking]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartialCancelQuoteRequest'
+      responses:
+        '200':
+          description: Partial cancellation quote.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelQuoteResponse'
+
+  /flight/booking/partial-cancel/confirm:
+    post:
+      summary: Confirm Partial Cancellation
+      tags: [Flights - Post-Booking]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyHeader'
+        - $ref: '#/components/parameters/RequestIDHeader'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartialCancelConfirmRequest'
+      responses:
+        '200':
+          description: Partial cancellation confirmed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelBookingResponse'
+
+  /flight/booking/reschedule/quote:
+    post:
+      summary: Get Reschedule Quote
+      tags: [Flights - Post-Booking]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RescheduleQuoteRequest'
+      responses:
+        '200':
+          description: Reschedule quote details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RescheduleQuoteResponse'
+
+  /flight/booking/reschedule/confirm:
+    post:
+      summary: Confirm Reschedule
+      tags: [Flights - Post-Booking]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyHeader'
+        - $ref: '#/components/parameters/RequestIDHeader'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RescheduleConfirmRequest'
+      responses:
+        '200':
+          description: Reschedule confirmed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RescheduleBookingResponse'
+
+  # --- Platform - Agency ---
+  /agency/wallet/transactions:
+    get:
+      summary: List Transactions
+      tags: [Platform - Agency]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: agent_id
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Cancellation processed and refund credited to wallet.
+          description: List of wallet transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WalletTransaction'
+
+  # --- Flights - Metadata ---
+  /flight/metadata/airports:
+    get:
+      summary: Airport Autocomplete
+      tags: [Flights - Metadata]
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string }
+          description: "Search query (minimum 2 characters). Search matches code, name, and city."
+      responses:
+        '200':
+          description: List of matching airports.
+
+  /flight/metadata/providers:
+    get:
+      summary: List Providers
+      tags: [Flights - Metadata]
+      parameters:
+        - in: query
+          name: origin
+          required: true
+          schema: { type: string }
+        - in: query
+          name: dest
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of available providers and their capabilities for the route.

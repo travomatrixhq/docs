@@ -1,0 +1,8 @@
+---
+title: "Create Booking (PNR)"
+openapi: "POST /flight/booking/create"
+---
+
+Reserve seats with the airline and generate a PNR.
+
+**Wallet Integration:** For B2B partners, the system performs an atomic balance check. If `Balance + Credit Limit` is sufficient, the `net_fare` is immediately debited, and the PNR is created.

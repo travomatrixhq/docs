@@ -1,31 +1,244 @@
 {
   "name": "Travomatrix B2B",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo-light.svg",
+    "dark": "/logo-dark.svg"
   },
   "favicon": "/favicon.png",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373"
+    "primary": "#00AEEF",
+    "light": "#33BEF2",
+    "dark": "#008CBE"
   },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "mailto:engineering@travomatrix.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Login",
+    "url": "https://app.travomatrix.com"
+  },
+  "tabs": [
+    {
+      "name": "Guides",
+      "url": "guides"
+    },
+    {
+      "name": "API Reference",
+      "url": "api"
+    },
+    {
+      "name": "Certification",
+      "url": "certification"
+    }
+  ],
+  "openapi": "openapi.yaml",
   "navigation": [
     {
-      "group": "Getting Started",
+      "group": "Welcome",
       "pages": [
-        "introduction",
-        "quickstart"
+        "guides/introduction",
+        "guides/quickstart",
+        "guides/authentication"
       ]
     },
     {
-      "group": "Flights",
+      "group": "Core Concepts",
       "pages": [
-        "api/search",
-        "api/validate",
-        "api/booking",
-        "api/post-booking"
+        "guides/b2b-flow",
+        "guides/wallet-logic"
       ]
+    },
+    {
+      "group": "Best Practices",
+      "pages": [
+        "guides/idempotency",
+        "guides/error-handling",
+        "guides/pagination"
+      ]
+    },
+    {
+      "group": "Architecture",
+      "pages": [
+        "guides/architecture/pricing-engine",
+        "guides/architecture/agency-platform"
+      ]
+    },
+    {
+      "group": "Finance API",
+      "icon": "building-columns",
+      "pages": [
+        "api/agency/wallet-transactions"
+      ]
+    },
+    {
+      "group": "Flights API",
+      "icon": "plane",
+      "pages": [
+        {
+          "group": "Search & Offers",
+          "icon": "magnifying-glass",
+          "pages": [
+            "api/flights/search-flights",
+            "api/flights/validate-fare"
+          ]
+        },
+        {
+          "group": "Ancillaries",
+          "icon": "suitcase-rolling",
+          "pages": [
+            "api/flights/ancillaries/seatmap",
+            "api/flights/ancillaries/meals",
+            "api/flights/ancillaries/baggage",
+            "api/flights/ancillaries/insurance"
+          ]
+        },
+        {
+          "group": "Booking",
+          "icon": "ticket",
+          "pages": [
+            "api/flights/booking/create",
+            "api/flights/booking/ticket",
+            "api/flights/booking/status"
+          ]
+        },
+        {
+          "group": "Post-Booking",
+          "icon": "rotate-left",
+          "pages": [
+            "api/flights/post-booking/cancel-quote",
+            "api/flights/post-booking/cancel-confirm",
+            "api/flights/post-booking/partial-cancel-quote",
+            "api/flights/post-booking/partial-cancel-confirm",
+            "api/flights/post-booking/reschedule-quote",
+            "api/flights/post-booking/reschedule-confirm"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Hotels API",
+      "pages": [
+        "guides/introduction"
+      ],
+      "icon": "hotel"
+    },
+    {
+      "group": "Rail API",
+      "pages": [
+        "guides/introduction"
+      ],
+      "icon": "train"
+    },
+    {
+      "group": "Flight Certification",
+      "icon": "award",
+      "pages": [
+        "certification/overview",
+        {
+          "group": "Core Booking",
+          "icon": "plane-departure",
+          "pages": [
+            "certification/flights/scenario-1/1-search",
+            "certification/flights/scenario-1/2-validate",
+            "certification/flights/scenario-1/3-book",
+            "certification/flights/scenario-1/4-ticket"
+          ]
+        },
+        {
+          "group": "Roundtrip & Extras",
+          "icon": "plane-circle-check",
+          "pages": [
+            "certification/flights/scenario-2/1-search",
+            "certification/flights/scenario-2/2-validate",
+            "certification/flights/scenario-2/3-seatmap",
+            "certification/flights/scenario-2/4-meals",
+            "certification/flights/scenario-2/5-book"
+          ]
+        },
+        {
+          "group": "Family & Multi-Leg",
+          "icon": "users",
+          "pages": [
+            "certification/flights/scenario-3/1-search",
+            "certification/flights/scenario-3/2-validate",
+            "certification/flights/scenario-3/3-book"
+          ]
+        },
+        {
+          "group": "Post-Booking & Refunds",
+          "icon": "rotate-left",
+          "pages": [
+            "certification/flights/scenario-4/1-search",
+            "certification/flights/scenario-4/2-validate",
+            "certification/flights/scenario-4/3-book",
+            "certification/flights/scenario-4/4-ticket",
+            "certification/flights/scenario-4/5-cancel-quote",
+            "certification/flights/scenario-4/6-cancel-confirm",
+            "certification/flights/scenario-4/7-wallet-check"
+          ]
+        },
+        {
+          "group": "Reliability & Safety",
+          "icon": "repeat",
+          "pages": [
+            "certification/flights/scenario-5/1-search",
+            "certification/flights/scenario-5/2-validate",
+            "certification/flights/scenario-5/3-duplicate",
+            "certification/flights/scenario-5/4-conflict",
+            "certification/flights/scenario-5/5-insufficient"
+          ]
+        },
+        {
+          "group": "Rescheduling",
+          "icon": "calendar-days",
+          "pages": [
+            "certification/flights/scenario-6/1-search",
+            "certification/flights/scenario-6/2-validate",
+            "certification/flights/scenario-6/3-book",
+            "certification/flights/scenario-6/4-ticket",
+            "certification/flights/scenario-6/5-search-new",
+            "certification/flights/scenario-6/6-reschedule-quote",
+            "certification/flights/scenario-6/7-reschedule-confirm"
+          ]
+        },
+        {
+          "group": "Partial Actions",
+          "icon": "scissors",
+          "pages": [
+            "certification/flights/scenario-7/1-search",
+            "certification/flights/scenario-7/2-validate",
+            "certification/flights/scenario-7/3-book",
+            "certification/flights/scenario-7/4-ticket",
+            "certification/flights/scenario-7/5-partial-quote",
+            "certification/flights/scenario-7/6-partial-confirm"
+          ]
+        },
+        {
+          "group": "Financial Ledger",
+          "icon": "list-ol",
+          "pages": [
+            "certification/flights/scenario-8/1-ledger"
+          ]
+        },
+        {
+          "group": "High Perf Operations",
+          "icon": "bolt",
+          "pages": [
+            "certification/flights/scenario-9/1-pagination",
+            "certification/flights/scenario-9/2-autocomplete"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Hotel Certification",
+      "pages": [
+        "certification/overview"
+      ],
+      "icon": "hotel"
     }
   ]
 }

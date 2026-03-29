@@ -1,0 +1,59 @@
+---
+title: "Certification Overview"
+description: "The mandatory path to Production for Enterprise B2B partners."
+icon: "award"
+---
+
+The Travomatrix Enterprise Certification is a rigorous validation process designed to ensure your integration is stable, financially accurate, and handles travel edge cases gracefully.
+
+To move from **UAT** (`http://uat.travomatrix.com/api/v1`) to **Production**, you must successfully execute and log the following scenarios.
+
+## Certification Roadmap
+
+<CardGroup cols={3}>
+  <Card title="Core Booking" icon="plane-departure" href="/certification/flights/scenario-1/1-search">
+    One-way flow for 1 Adult.
+  </Card>
+  <Card title="Roundtrip & Extras" icon="plane-circle-check" href="/certification/flights/scenario-2/1-search">
+    RT search + Seats & Meals.
+  </Card>
+  <Card title="Family Logic" icon="users" href="/certification/flights/scenario-3/1-search">
+    Adult, Child, and Infant mapping.
+  </Card>
+  <Card title="Full Cancellation" icon="rotate-left" href="/certification/flights/scenario-4/1-search">
+    Quote & Confirm cancellation.
+  </Card>
+  <Card title="Reliability" icon="repeat" href="/certification/flights/scenario-5/1-search">
+    Idempotency & 402 Errors.
+  </Card>
+  <Card title="Rescheduling" icon="calendar-days" href="/certification/flights/scenario-6/1-search">
+    Flight changes & Fare diffs.
+  </Card>
+  <Card title="Partial Actions" icon="scissors" href="/certification/flights/scenario-7/1-search">
+    Split PNR & Partial Pax cancel.
+  </Card>
+  <Card title="Financial Ledger" icon="list-ol" href="/certification/flights/scenario-8/1-ledger">
+    Wallet transactions & Audits.
+  </Card>
+  <Card title="High Perf Search" icon="bolt" href="/certification/flights/scenario-9/1-pagination">
+    NDJSON Streaming & Pagination.
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+Before starting the certification, ensure you have:
+1. **API Key & Agent ID**: Sign in to `app.travomatrix.com` and generate your UAT `X-API-Key`. Copy your `Agent ID`.
+2. **Authorize the Widget**: Paste your API key into the `X-API-Key` input box at the top right of any interactive API page to instantly authenticate your requests in the browser.
+3. **Wallet Balance**: Ensure your UAT wallet has sufficient test funds. Contact your account manager if you need a top-up to avoid `INSUFFICIENT_FUNDS` errors during testing.
+
+## Submission Requirements
+
+Upon completion, you must provide a **Certification Report** (JSON or PDF) containing:
+1. Your **AgentID**.
+2. A list of **X-Request-ID** values for each successful step.
+3. Screenshots of your UI showing the **Final Price** (inclusive of markup) vs the **Net Fare** retrieved from our API.
+
+<Info>
+  Once submitted to `engineering@travomatrix.com`, our team will verify the audit logs in our **Event Store** to ensure all state transitions were valid.
+</Info>

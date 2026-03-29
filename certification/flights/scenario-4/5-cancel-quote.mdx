@@ -1,0 +1,17 @@
+---
+title: "Step 1: Cancel Quote"
+openapi: "POST /flight/booking/cancel/quote"
+---
+
+Enter your `booking_id` to retrieve a cancellation quote. Review the `airline_penalty_paise` and `refund_amount_paise`.
+
+### Request Setup
+<ParamField body="booking_id" type="string" required>Paste the `booking_id` of the TICKETED booking.</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Review the `airline_penalty_paise` and `refund_amount_paise`.
+</Warning>

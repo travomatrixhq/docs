@@ -1,0 +1,18 @@
+---
+title: "Step 1: Partial Cancel Quote"
+openapi: "POST /flight/booking/partial-cancel/quote"
+---
+
+Provide a `booking_id` that has multiple passengers. Add the target passenger's ID (e.g., `ADT2`) to the `passengers_to_cancel` array to get a quote.
+
+### Request Setup
+<ParamField body="booking_id" type="string" required>Paste the `booking_id`.</ParamField>
+<ParamField body="passengers_to_cancel" type="array" required>Array of passenger IDs (e.g., ["ADT2"]).</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Review the response payload carefully.
+</Warning>

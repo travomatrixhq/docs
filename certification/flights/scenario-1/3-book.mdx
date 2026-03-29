@@ -1,0 +1,39 @@
+---
+title: "Step 3: Create Booking"
+openapi: "POST /flight/booking/create"
+---
+
+Now that the price is locked, generate a PNR. This operation is financial and will atomically deduct the `net_fare` from your agency wallet.
+
+### Request Setup
+<ParamField header="Idempotency-Key" type="string" required>Generate a random string (e.g. `idem-123`).</ParamField>
+<ParamField body="fare_token" type="string" required>Paste the token from Step 2.</ParamField>
+<ParamField body="agent_id" type="string" default="YOUR_AGENT_ID" required>Your specific UAT Agent ID.</ParamField>
+<ParamField body="idempotency_key" type="string" default="idem-123" />
+<ParamField body="passengers" type="array" required>
+  <Expandable>
+    <ParamField body="id" type="string" default="ADT1" />
+    <ParamField body="type" type="string" default="ADT" />
+    <ParamField body="title" type="string" default="MR" />
+    <ParamField body="first_name" type="string" default="JOHN" />
+    <ParamField body="last_name" type="string" default="DOE" />
+    <ParamField body="gender" type="string" default="M" />
+    <ParamField body="dob" type="string" default="1990-05-15" />
+    <ParamField body="nationality" type="string" default="IN" />
+  </Expandable>
+</ParamField>
+<ParamField body="contact_info" type="object" required>
+  <Expandable>
+    <ParamField body="email" type="string" default="john.doe@example.com" />
+    <ParamField body="phone" type="string" default="+919876543210" />
+  </Expandable>
+</ParamField>
+
+### Instructions
+1. Paste the `fare_token` you received in Step 2.
+2. Ensure you have provided an `Idempotency-Key` in the headers.
+3. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Your booking status should be `BOOKED`. Copy the `booking_id` from the response.
+</Warning>

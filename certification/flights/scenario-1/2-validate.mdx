@@ -1,0 +1,23 @@
+---
+title: "Step 2: Validate Fare"
+openapi: "POST /flight/fare/validate"
+---
+
+Before you can book, you must lock the price. We've removed the bloated schema definitions from this view so you can focus solely on executing the step.
+
+### Request Setup
+<ParamField body="search_id" type="string" required>Paste the `search_id` from Step 1.</ParamField>
+<ParamField body="signature" type="string" required>Paste the `signature` from Step 1.</ParamField>
+<ParamField body="pax" type="object" required>
+  <Expandable>
+    <ParamField body="adult" type="integer" default="1" />
+  </Expandable>
+</ParamField>
+
+### Instructions
+1. Paste the `search_id` and `signature` you copied from Step 1 into the fields above (or directly in the JSON on the right).
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** The provider has now locked this price for 15 minutes. Copy the `fare_token` from the response. You will need it to create the booking.
+</Warning>

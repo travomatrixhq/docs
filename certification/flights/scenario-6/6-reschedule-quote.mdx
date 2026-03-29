@@ -1,0 +1,18 @@
+---
+title: "Step 2: Reschedule Quote"
+openapi: "POST /flight/booking/reschedule/quote"
+---
+
+Provide your `booking_id` and the `new_offer_id`. The system calculates the `fare_difference_paise` and any `change_penalty_paise`.
+
+### Request Setup
+<ParamField body="booking_id" type="string" required>Paste the `booking_id`.</ParamField>
+<ParamField body="new_offer_id" type="string" required>Paste the `offer_id` from the new flight search.</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Review the response payload carefully.
+</Warning>

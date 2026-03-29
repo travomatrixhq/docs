@@ -1,0 +1,45 @@
+---
+title: "Pagination"
+description: "Iterating through large sets of flight results."
+icon: "list-ol"
+---
+
+The Search API is designed to handle hundreds of potential flight offers. To keep the API responsive and reduce bandwidth for mobile clients, Travomatrix uses **cursor-based pagination**.
+
+## How Pagination Works
+
+When you perform a fresh search using `POST /api/v1/search`, the response will include a `cursor` field if more results are available.
+
+```json
+{
+  "search_id": "SEARCH_123",
+  "count": 50,
+  "total_results": 245,
+  "cursor": "U0VBUkNIXzEyMzoxMDA=",
+  "results": [...]
+}
+```
+
+### Retrieving the Next Page
+
+To fetch the next set of results, you must send another `POST /api/v1/search` request, but this time, you must include the `cursor` field. All other search parameters (Origin, Dest, etc.) should be omitted or kept the same; the `cursor` takes precedence.
+
+```json
+{
+  "cursor": "U0VBUkNIXzEyMzoxMDA=",
+  "limit": 50
+}
+```
+
+### Cursor Details
+
+- **Type:** Base64 encoded string.
+- **Expiration:** Cursors are tied to the original `search_id` and are valid for **30 minutes**. After this time, the cached results are cleared, and you must perform a new search.
+- **Limit:** You can specify a different `limit` for each page request (default is 100).
+
+## Implementation Checklist
+
+1. **First Search:** Call `/search` and store the `search_id`.
+2. **Infinite Scroll/Load More:** Check if `cursor` is present in the response.
+3. **Subsequent Fetch:** Send the `cursor` to get the next page.
+4. **End of Results:** If the `cursor` is `null` or missing, all results have been retrieved.

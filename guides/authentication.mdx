@@ -1,0 +1,24 @@
+---
+title: "Authentication"
+description: "How to securely authenticate your requests to the Travomatrix API."
+icon: "lock"
+---
+
+Travomatrix secures its B2B APIs using static, long-lived **API Keys** for backend server-to-server operations.
+
+## API Key Authentication
+
+For all B2B integrations—including Flight Search, Fare Validation, Booking Creation, and Post-Booking workflows—you must include your API Key in the `X-API-Key` header of every HTTP request.
+
+```http
+X-API-Key: your_production_or_uat_api_key
+```
+
+<Warning>
+  **Security Rule:** Never expose your API Key in client-side code (such as a React frontend or an iOS/Android app). All requests to the Travomatrix API must be routed through your own secure backend server to protect your B2B wallet from unauthorized debits.
+</Warning>
+
+### Authenticating the Interactive Widgets
+When reading this documentation, you can test endpoints live directly in your browser! 
+
+At the top of the dark right-hand panel on any API page, you will see an **Authorization** section. Simply paste your UAT API Key into the `X-API-Key` input box. Mintlify will automatically inject this header into every request you make when you click the **Send** button.

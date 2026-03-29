@@ -1,0 +1,23 @@
+---
+title: "Step 2: Validate Family Fare"
+openapi: "POST /flight/fare/validate"
+---
+
+In the `pax` object, make sure to explicitly define `adult: 1`, `child: 1`, and `infant: 1` so the provider locks the correct inventory.
+
+### Request Setup
+<ParamField body="search_id" type="string" required>Paste the `search_id` from Step 1.</ParamField>
+<ParamField body="signature" type="string" required>Paste the `signature` from Step 1.</ParamField>
+<ParamField body="pax" type="object" required>
+  <Expandable>
+    <ParamField body="adult" type="integer" default="1" />
+  </Expandable>
+</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Copy the `fare_token` and `provider`. The price is locked for 15 minutes.
+</Warning>

@@ -1,0 +1,20 @@
+---
+title: "Step 4: Fetch Meals"
+openapi: "POST /flight/fare/meals"
+---
+
+Use the same `fare_token` to fetch the meals catalog. Copy the `ancillary_token` of your desired meal.
+
+### Request Setup
+<ParamField body="search_id" type="string" required>Paste the `search_id`.</ParamField>
+<ParamField body="signature" type="string" required>Paste the `signature`.</ParamField>
+<ParamField body="fare_token" type="string" required>Paste the `fare_token`.</ParamField>
+<ParamField body="provider" type="string" required>Provider code from validation response.</ParamField>
+
+### Instructions
+1. Review the requirements and set up the request payload.
+2. Hit the **Send** button.
+
+<Warning>
+  **Requirement:** Copy the `ancillary_token` for the selected meal.
+</Warning>

@@ -1,0 +1,17 @@
+---
+title: "Step 4: Issue Ticket"
+openapi: "POST /flight/booking/ticket"
+---
+
+Finalize the reservation by issuing the ticket.
+
+### Request Setup
+<ParamField body="booking_id" type="string" required>Paste your `booking_id` from Step 3.</ParamField>
+
+### Instructions
+1. Paste your `booking_id` from Step 3 into the field above.
+2. Hit the **Send** button.
+
+<Check>
+  **Certification Check:** If your booking status is now `TICKETED` and your wallet was successfully debited, you have completed Scenario 1!
+</Check>
