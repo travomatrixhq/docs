@@ -64,13 +64,6 @@
       ]
     },
     {
-      "group": "Architecture",
-      "pages": [
-        "guides/architecture/pricing-engine",
-        "guides/architecture/agency-platform"
-      ]
-    },
-    {
       "group": "Finance API",
       "icon": "building-columns",
       "pages": [
