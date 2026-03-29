@@ -1,19 +1,10 @@
 {
-  "name": "Travomatrix B2B",
+  "name": "Travomatrix API",
   "logo": {
     "light": "/logo.svg",
     "dark": "/logo-dark.svg"
   },
   "favicon": "/favicon.png",
-  "colors": {
-    "primary": "#FF7A00",
-    "light": "#00AEEF",
-    "dark": "#006F99",
-    "anchors": {
-      "from": "#FF7A00",
-      "to": "#00AEEF"
-    }
-  },
   "topbarLinks": [
     {
       "name": "Support",
