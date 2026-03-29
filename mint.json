@@ -5,6 +5,7 @@
     "dark": "/logo-dark.svg"
   },
   "favicon": "/favicon.png",
+  "colors": {},
   "topbarLinks": [
     {
       "name": "Support",
