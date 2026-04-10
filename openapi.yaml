@@ -51,17 +51,62 @@ components:
 
   schemas:
     # --- Shared Models ---
-    Error:
+    ErrorResponse:
       type: object
       properties:
-        error:
+        trace_id:
           type: string
-          example: "INSUFFICIENT_FUNDS"
+          example: "req_abc123"
+        error:
+          $ref: '#/components/schemas/AppError'
+
+    AppError:
+      type: object
+      required: [category, code, message]
+      properties:
+        category:
+          type: string
+          enum: [AUTH, SEARCH, BOOKING, WALLET, PROVIDER, SYSTEM, VALIDATION]
+        code:
+          type: string
+          example: "BOOKING_FARE_EXPIRED"
         message:
           type: string
-          example: "Your agency wallet balance is insufficient for this booking."
-        search_id:
+          example: "The selected fare has expired."
+        retryable:
+          type: boolean
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        provider:
+          $ref: '#/components/schemas/ProviderError'
+
+    ValidationError:
+      type: object
+      properties:
+        field:
           type: string
+          example: "passengers[0].first_name"
+        code:
+          type: string
+          example: "REQUIRED"
+        message:
+          type: string
+          example: "First name is required."
+
+    ProviderError:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "AMADEUS"
+        code:
+          type: string
+          example: "32171"
+        message:
+          type: string
+          example: "Price has changed"
 
     PricingBreakdown:
       type: object
@@ -597,7 +642,22 @@ paths:
           description: Validation Error
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
 
   /flight/fare/validate:
     post:
@@ -663,13 +723,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookingResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
         '402':
           description: Insufficient Funds.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
         '409':
           description: Idempotency Conflict.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
 
   /flight/booking/ticket:
     post:
@@ -962,3 +1035,60 @@ paths:
       responses:
         '200':
           description: List of available providers and their capabilities for the route.
+
+  # --- Platform - Management ---
+  /agency/balance:
+    get:
+      summary: Get Agency Balance
+      description: Retrieve current credit and cash balance for the agency.
+      tags: [Platform - Agency]
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: agent_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agency balance details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id: { type: string }
+                  currency: { type: string }
+                  credit_limit_paise: { type: integer }
+                  available_balance_paise: { type: integer }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /health/providers:
+    get:
+      summary: Provider Health Status
+      description: Check the connectivity and health of upstream GDS/NDC providers.
+      tags: [System]
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Health status of all registered providers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [UP, DEGRADED, DOWN] }
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name: { type: string }
+                        status: { type: string }
+                        latency_ms: { type: integer }
